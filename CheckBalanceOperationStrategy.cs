@@ -15,6 +15,7 @@ namespace CashMachine_Labb1_DesignPattern
         public CheckBalanceOperationStrategy(CashMachine cashMachine)
         {
             this.cashMachine = cashMachine;
+            //Console.Clear();
         }
 
         public void PerformOperation()

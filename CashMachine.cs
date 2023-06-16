@@ -12,7 +12,7 @@ namespace CashMachine_Labb1_DesignPattern
     {
         private static readonly object lockObject = new object();
         private static bool isCardInserted = false;
-        private double balance = 100000;
+        private double balance = 100000; //Define account balance, same for all validPins
         int[] validPins = { 1234, 5678, 9876 }; // Define the valid PINs
 
         public void InsertCard()
@@ -21,6 +21,7 @@ namespace CashMachine_Labb1_DesignPattern
             Console.WriteLine("Welcome to AI ATM bank:");
             Console.ResetColor();
             Console.WriteLine();
+
             Console.WriteLine("Do you have your card? [Y/N]");
             var cardAnswer = Console.ReadLine();
             if (cardAnswer != null)
@@ -34,6 +35,7 @@ namespace CashMachine_Labb1_DesignPattern
                             isCardInserted = true;
                             Console.ForegroundColor = ConsoleColor.DarkBlue;
                             CashMachineSubject.NotifyObservers("Card inserted");
+                            SneakPeek();
                             Console.ResetColor();
                         }
                     }
@@ -56,7 +58,7 @@ namespace CashMachine_Labb1_DesignPattern
                     CashMachineSubject.NotifyObservers("..3");
                     Thread.Sleep(300);
                     Console.WriteLine();
-                    Console.WriteLine("Have you found your card?");
+                    Console.WriteLine("Have you found your card? [Y/N]");
                     var foundCard = Console.ReadLine();
                     if(foundCard.ToLower() == "y")
                     {
@@ -78,6 +80,7 @@ namespace CashMachine_Labb1_DesignPattern
         {
             while (!validPins.Contains(pin))
             {
+
                 Console.ForegroundColor = ConsoleColor.Red;
                 CashMachineSubject.NotifyObservers("Invalid PIN. Please try again.");
                 Console.ResetColor();
@@ -96,13 +99,13 @@ namespace CashMachine_Labb1_DesignPattern
             int pin;
             while (!int.TryParse(input, out pin))
             {
+                Console.ForegroundColor = ConsoleColor.DarkCyan;
                 Console.WriteLine("Invalid input. Please enter a valid PIN: ");
+                Console.ResetColor();
                 input = Console.ReadLine();
             }
             return pin;
         }
-
-
 
         public void PerformWithdraw()
         {
@@ -110,17 +113,26 @@ namespace CashMachine_Labb1_DesignPattern
             if (ValidateBalance(amount))
             {
                 DeductBalance(amount);
-                Console.WriteLine("Withdrawal successful.");
+                Console.ForegroundColor = ConsoleColor.Blue;
+                CashMachineSubject.NotifyObservers("Withdrawal successful.");
+                Console.ForegroundColor= ConsoleColor.Green;
+                CashMachineSubject.NotifyObservers($"New balance is: ${balance}");
+                Console.ResetColor();
             }
             else
             {
-                Console.WriteLine("Insufficient balance. Please try again.");
+                Console.WriteLine();
+                Console.ForegroundColor = ConsoleColor.Red;
+                CashMachineSubject.NotifyObservers("Insufficient balance. Please try again.");
+                Console.ResetColor();
             }
         }
 
         public void PerformCheckBalance()
         {
-            Console.WriteLine($"Your current balance is: {balance}");
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine($"Your current balance is: ${balance}");
+            Console.ResetColor();
         }
 
         private double ReadAmountInput(string prompt)
@@ -139,17 +151,32 @@ namespace CashMachine_Labb1_DesignPattern
 
         private bool ValidateBalance(double amount)
         {
+            // Checks if the current balance is greater than or equal to the specified amount.
             return balance >= amount;
         }
 
         private void DeductBalance(double amount)
         {
+            // Subtracts the specified amount from the balance.
             balance -= amount;
         }
 
         public void Update(string message)
         {
+            // Displays the provided message with the prefix "CashMachineObserver: ".
             Console.WriteLine("CashMachineObserver: " + message);
+        }
+
+
+        public void SneakPeek()
+        {
+            CashMachineSubject.NotifyObservers("Valid pins: ");
+            foreach (var validpin in validPins)
+            {
+                Console.ForegroundColor = ConsoleColor.DarkGray;
+                Console.WriteLine(validpin);
+                Console.ResetColor();
+            }
         }
     }
 }

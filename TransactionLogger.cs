@@ -11,6 +11,11 @@ namespace CashMachine_Labb1_DesignPattern
 
     public class TransactionLogger : ICashMachineObserver
     {
+        public void SneakPeek()
+        {
+            throw new NotImplementedException();
+        }
+
         public void Update(string message)
         {
             Console.WriteLine($"[Transaction Log] {message}");

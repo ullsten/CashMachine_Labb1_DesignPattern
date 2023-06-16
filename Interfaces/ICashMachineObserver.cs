@@ -10,5 +10,6 @@ namespace CashMachine_Labb1_DesignPattern.Interfaces
     public interface ICashMachineObserver
     {
         void Update(string message);
+        void SneakPeek();
     }
 }
