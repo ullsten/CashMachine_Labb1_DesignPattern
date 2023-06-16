@@ -10,17 +10,99 @@ namespace CashMachine_Labb1_DesignPattern
     // CashMachine (Observer Pattern)
     public class CashMachine : ICashMachineObserver
     {
+        private static readonly object lockObject = new object();
+        private static bool isCardInserted = false;
         private double balance = 100000;
+        int[] validPins = { 1234, 5678, 9876 }; // Define the valid PINs
 
         public void InsertCard()
         {
-            Console.WriteLine("Card inserted.");
+            Console.ForegroundColor = ConsoleColor.DarkYellow;
+            Console.WriteLine("Welcome to AI ATM bank:");
+            Console.ResetColor();
+            Console.WriteLine();
+            Console.WriteLine("Do you have your card? [Y/N]");
+            var cardAnswer = Console.ReadLine();
+            if (cardAnswer != null)
+            {
+                if(cardAnswer.ToLower() == "y")
+                {
+                    lock (lockObject)
+                    {
+                        if (!isCardInserted)
+                        {
+                            isCardInserted = true;
+                            Console.ForegroundColor = ConsoleColor.DarkBlue;
+                            CashMachineSubject.NotifyObservers("Card inserted");
+                            Console.ResetColor();
+                        }
+                    }
+                }
+                else
+                {
+                    isCardInserted = false;
+                    Console.ForegroundColor= ConsoleColor.Red;
+                    CashMachineSubject.NotifyObservers("You are locked out, please contact your bank.");
+                    Console.ResetColor();
+                    Console.WriteLine();
+                    Thread.Sleep(300);
+                    Console.ForegroundColor = ConsoleColor.White;
+                    CashMachineSubject.NotifyObservers("1..");
+                    Thread.Sleep(300);
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    CashMachineSubject.NotifyObservers(".2");
+                    Thread.Sleep(300);
+                    Console.ForegroundColor = ConsoleColor.Blue;
+                    CashMachineSubject.NotifyObservers("..3");
+                    Thread.Sleep(300);
+                    Console.WriteLine();
+                    Console.WriteLine("Have you found your card?");
+                    var foundCard = Console.ReadLine();
+                    if(foundCard.ToLower() == "y")
+                    {
+                        InsertCard();
+                    }
+                    else
+                    {
+                        Console.BackgroundColor = ConsoleColor.White;
+                        Console.ForegroundColor = ConsoleColor.Black;
+                        CashMachineSubject.NotifyObservers("BYE");
+                        Console.ResetColor();
+                        Environment.Exit(0);
+                    }        
+                }
+            }
         }
 
         public void EnterPin(int pin)
         {
-            Console.WriteLine("PIN entered.");
+            while (!validPins.Contains(pin))
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                CashMachineSubject.NotifyObservers("Invalid PIN. Please try again.");
+                Console.ResetColor();
+                pin = ReadPinInput();
+            }
+
+            Console.ForegroundColor = ConsoleColor.DarkBlue;
+            CashMachineSubject.NotifyObservers("PIN entered");
+            Console.ResetColor();
         }
+
+        private int ReadPinInput()
+        {
+            Console.Write("Enter your PIN: ");
+            string input = Console.ReadLine();
+            int pin;
+            while (!int.TryParse(input, out pin))
+            {
+                Console.WriteLine("Invalid input. Please enter a valid PIN: ");
+                input = Console.ReadLine();
+            }
+            return pin;
+        }
+
+
 
         public void PerformWithdraw()
         {
@@ -48,7 +130,8 @@ namespace CashMachine_Labb1_DesignPattern
             double amount;
             while (!double.TryParse(input, out amount))
             {
-                Console.WriteLine("Invalid input. Please enter a valid amount: ");
+                CashMachineSubject.NotifyObservers("Invalid input. Please enter a valid amount: ");
+               // Console.WriteLine("Invalid input. Please enter a valid amount: ");
                 input = Console.ReadLine();
             }
             return amount;

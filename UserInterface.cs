@@ -19,13 +19,16 @@ namespace CashMachine_Labb1_DesignPattern
         {
             public int ReadPinInput()
             {
-                Console.Write("Enter your PIN: ");
+                Console.WriteLine();
+                CashMachineSubject.NotifyObservers("Enter your PIN: ");
                 string input = Console.ReadLine();
                 int pin;
                 while (!int.TryParse(input, out pin))
                 {
-                    Console.WriteLine("Invalid input. Please enter a valid PIN: ");
+                    Console.ForegroundColor = ConsoleColor.Red; 
+                    CashMachineSubject.NotifyObservers("Invalid input. Please enter a valid PIN in numbers: ");
                     input = Console.ReadLine();
+                    Console.ResetColor();
                 }
                 return pin;
             }
@@ -48,6 +51,7 @@ namespace CashMachine_Labb1_DesignPattern
             bool exit = false;
             while (!exit)
             {
+                Console.WriteLine();
                 Console.WriteLine("Available operations:");
                 Console.WriteLine("1. Withdraw Cash");
                 Console.WriteLine("2. Check Balance");
@@ -58,6 +62,10 @@ namespace CashMachine_Labb1_DesignPattern
 
                 switch (input)
                 {
+                    //case "0":
+                    //    cashMachine.InsertCard();
+                    //    cashMachine.EnterPin(userInputHandler.ReadPinInput());
+                    //    break;
                     case "1":
                         PerformOperation(new WithdrawOperationStrategy(cashMachine));
                         break;
@@ -68,7 +76,9 @@ namespace CashMachine_Labb1_DesignPattern
                         exit = true;
                         break;
                     default:
-                        Console.WriteLine("Invalid choice. Please try again.");
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        CashMachineSubject.NotifyObservers("Invalid choice. Please try again");
+                        Console.ResetColor();
                         break;
                 }
             }
