@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Principal;
 using System.Threading;
 using CashMachine_Labb1_DesignPattern.Interfaces;
+using CashMachine_Labb1_DesignPattern.Model;
 
 namespace CashMachine_Labb1_DesignPattern
 {
@@ -12,15 +14,14 @@ namespace CashMachine_Labb1_DesignPattern
         private static readonly object lockObject = new object();
         private static bool isCardInserted = true;
         private static int[] validPins = { 1234, 5678, 9876 }; // Define the valid PINs
-        private static Dictionary<int, double> accountBalances = new Dictionary<int, double>()
+        private static List<Account> accounts = new List<Account>()
         {
-            {1234, 100000 },
-            {5678, 58500 },
-            {9876, 456800 },
-
+            new Account { AccountID = GenerateRandomAccountNumber(), Pin = 1234, Balance = 100000 },
+            new Account { AccountID = GenerateRandomAccountNumber(), Pin = 5678, Balance = 58500 },
+            new Account { AccountID = GenerateRandomAccountNumber(), Pin = 9876, Balance = 456800 }
         };
         private int enteredPin;
-        private double balance; // Define account balance, same for all validPins
+       // private double balance; // Define account balance, same for all validPins
 
         public void InsertCard()
         {
@@ -124,49 +125,137 @@ namespace CashMachine_Labb1_DesignPattern
         public void PerformWithdraw()
         {
             double amount = ReadAmountInput("Enter the amount to withdraw: ");
-            double currentBalance = accountBalances[enteredPin]; // Get current balance from entered pin
-            if (ValidateBalance(amount, currentBalance))
+            var account = GetAccountByPin(enteredPin);
+
+            if (account != null)
             {
-                DeductBalance(amount, enteredPin); // Update the current balance
-                currentBalance = accountBalances[enteredPin]; // Update the current balance after deduction
-                Console.WriteLine();
-                Console.ForegroundColor = ConsoleColor.Blue;
-                CashMachineSubject.NotifyObservers("Withdrawal successful.");
-                Console.ForegroundColor = ConsoleColor.Green;
-                CashMachineSubject.NotifyObservers($"New balance is: ${currentBalance}");
-                Console.ResetColor();
+                if (ValidateBalance(amount, account.Balance))
+                {
+                    DeductBalance(amount, account);
+                    Console.ForegroundColor = ConsoleColor.Blue;
+                    CashMachineSubject.NotifyObservers("Withdrawal successful.");
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    CashMachineSubject.NotifyObservers($"New balance is: ${account.Balance}");
+                    Console.ResetColor();
+                }
+                else
+                {
+                    Console.WriteLine();
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    CashMachineSubject.NotifyObservers("Insufficient balance. Please try again.");
+                    Console.ResetColor();
+                }
             }
             else
             {
                 Console.WriteLine();
                 Console.ForegroundColor = ConsoleColor.Red;
-                CashMachineSubject.NotifyObservers("Insufficient balance. Please try again.");
+                CashMachineSubject.NotifyObservers("Invalid PIN. Please try again.");
                 Console.ResetColor();
             }
         }
 
         public void PerformCheckBalance()
         {
-            double currentBalance = accountBalances[enteredPin];
-            Console.ForegroundColor = ConsoleColor.Green;
-            CashMachineSubject.NotifyObservers($"Your current balance is: ${currentBalance}");
-            Console.ResetColor();
+            var account = GetAccountByPin(enteredPin);
+            if (account != null)
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine($"Your current balance is: ${account.Balance}");
+                Console.ResetColor();
+            }
+            else
+            {
+                Console.WriteLine();
+                Console.ForegroundColor = ConsoleColor.Red;
+                CashMachineSubject.NotifyObservers("Invalid PIN. Please try again.");
+                Console.ResetColor();
+            }
         }
 
         public void PerformInsertMoney()
         {
-            double amount = ReadAmountInput("Enter the amount to insert: ");
-            accountBalances[enteredPin] += amount;
-            double newBalance = accountBalances[enteredPin];
-            Console.WriteLine();
-            Console.ForegroundColor = ConsoleColor.Blue;
-            CashMachineSubject.NotifyObservers("Insert successfully");
-            Console.ResetColor();
-            Console.ForegroundColor = ConsoleColor.Green;
-            CashMachineSubject.NotifyObservers($"New balance is: ${newBalance}");
-            Console.ResetColor();
-            Console.WriteLine();
+            var account = GetAccountByPin(enteredPin);
+            if (account != null)
+            {
+                double amount = ReadAmountInput("Enter the amount to insert: ");
+                account.Balance += amount;
+                double newBalance = account.Balance;
+                Console.WriteLine();
+                Console.ForegroundColor = ConsoleColor.Green;
+                CashMachineSubject.NotifyObservers($"New balance is: ${newBalance}");
+                Console.ResetColor();
+                Console.WriteLine();
+            }
+            else
+            {
+                Console.WriteLine();
+                Console.ForegroundColor = ConsoleColor.Red;
+                CashMachineSubject.NotifyObservers("Invalid PIN. Please try again.");
+                Console.ResetColor();
+            }
         }
+
+        public void PerformTransfer()
+        {
+            Console.WriteLine("Available accounts:");
+            foreach (var account in accounts)
+            {
+                Console.WriteLine($"Account ID: {account.AccountID}");
+            }
+
+            string targetAccountId = ReadAccountIdInput("Enter the account ID to transfer money to: ");
+            double amount = ReadAmountInput("Enter the amount to transfer: ");
+
+            var sourceAccount = GetAccountByPin(enteredPin);
+            var targetAccount = GetAccountById(targetAccountId);
+
+            if (sourceAccount != null && targetAccount != null)
+            {
+                if (ValidateBalance(amount, sourceAccount.Balance))
+                {
+                    DeductBalance(amount, sourceAccount);
+                    AddBalance(amount, targetAccount);
+
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    CashMachineSubject.NotifyObservers($"Transfer of ${amount} successful.");
+                    CashMachineSubject.NotifyObservers($"New balance for account {sourceAccount.AccountID} is: ${sourceAccount.Balance}");
+                    CashMachineSubject.NotifyObservers($"New balance for account {targetAccount.AccountID} is: ${targetAccount.Balance}");
+                    Console.ResetColor();
+                }
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    CashMachineSubject.NotifyObservers("Insufficient balance. Please try again.");
+                    Console.ResetColor();
+                }
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                CashMachineSubject.NotifyObservers("Invalid PIN or account ID. Please try again.");
+                Console.ResetColor();
+            }
+        }
+
+        private string ReadAccountIdInput(string prompt)
+        {
+            Console.Write(prompt);
+            string accountId = Console.ReadLine();
+
+            return accountId;
+        }
+
+
+        private Account GetAccountById(string accountId)
+        {
+            return accounts.FirstOrDefault(a => a.AccountID == accountId);
+        }
+        private void AddBalance(double amount, Account account)
+        {
+            account.Balance += amount;
+        }
+
 
         private double ReadAmountInput(string prompt)
         {
@@ -187,10 +276,15 @@ namespace CashMachine_Labb1_DesignPattern
             return currentBalance >= amount;
         }
 
-        private void DeductBalance(double amount, int pin)
+        private void DeductBalance(double amount, Account account)
         {
             // Subtracts the specified amount from the balance.
-            accountBalances[pin] -= amount;
+            account.Balance -= amount;
+        }
+
+        private Account GetAccountByPin(int pin)
+        {
+            return accounts.FirstOrDefault(a => a.Pin == pin);
         }
 
         public void Update(string message)
@@ -209,6 +303,19 @@ namespace CashMachine_Labb1_DesignPattern
                 Console.WriteLine(validpin);
                 Console.ResetColor();
             }
+        }
+        public static string GenerateRandomAccountNumber()
+        {
+            Random random = new Random();
+            string accountNumber = string.Empty;
+
+            // Generate a 10-digit random number
+            for (int i = 0; i < 10; i++)
+            {
+                accountNumber += random.Next(0, 10).ToString();
+            }
+
+            return accountNumber;
         }
     }
 }

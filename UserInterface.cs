@@ -11,9 +11,13 @@ namespace CashMachine_Labb1_DesignPattern
     // User interface (Factory Method, Observer, Strategy patterns)
     public class UserInterface
     {
-
         private CashMachine cashMachine;
         private UserInputHandler userInputHandler;
+        public UserInterface()
+        {
+            cashMachine = CashMachineFactory.CreateCashMachine();
+            userInputHandler = new UserInputHandler();
+        }
 
         // UserInputHandler
         public class UserInputHandler
@@ -26,7 +30,7 @@ namespace CashMachine_Labb1_DesignPattern
                 int pin;
                 while (!int.TryParse(input, out pin))
                 {
-                    Console.ForegroundColor = ConsoleColor.Red; 
+                    Console.ForegroundColor = ConsoleColor.Red;
                     CashMachineSubject.NotifyObservers("Invalid input. Please enter a valid PIN in numbers: ");
                     input = Console.ReadLine();
                     Console.ResetColor();
@@ -34,13 +38,6 @@ namespace CashMachine_Labb1_DesignPattern
                 return pin;
             }
         }
-
-        public UserInterface()
-        {
-            cashMachine = CashMachineFactory.CreateCashMachine();
-            userInputHandler = new UserInputHandler();
-        }
-
         public void RunProgram()
         {
             var transactionLogger = new TransactionLogger();
@@ -62,10 +59,12 @@ namespace CashMachine_Labb1_DesignPattern
                 Console.ForegroundColor = ConsoleColor.Blue;
                 Console.WriteLine("3. Withdraw Cash");
                 Console.ForegroundColor = ConsoleColor.Cyan;
-                Console.WriteLine("4. Enter new pin");
+                Console.WriteLine("4. Transfer money");
+                Console.ResetColor();
+                Console.WriteLine("5. Enter new pin");
                 Console.ResetColor();
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("5. Log out");
+                Console.WriteLine("6. Log out");
                 Console.ResetColor();
                 Console.WriteLine(new string('-', 20));
                 Console.Write("Enter your choice: ");
@@ -88,11 +87,15 @@ namespace CashMachine_Labb1_DesignPattern
                         break;
                     case "4":
                         Console.Clear();
-                        cashMachine.SneakPeek();
-                        cashMachine.EnterPin();
-
+                        cashMachine.PerformTransfer();
                         break; 
                     case "5":
+                        Console.Clear();
+                        cashMachine.SneakPeek();
+                        cashMachine.EnterPin();
+                        break;
+                    case "6":
+                        Console.Clear();
                         ExitUI();
                         exit = true;
                         break;
