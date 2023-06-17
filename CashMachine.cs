@@ -129,7 +129,7 @@ namespace CashMachine_Labb1_DesignPattern
             {
                 DeductBalance(amount, enteredPin); // Update the current balance
                 currentBalance = accountBalances[enteredPin]; // Update the current balance after deduction
-
+                Console.WriteLine();
                 Console.ForegroundColor = ConsoleColor.Blue;
                 CashMachineSubject.NotifyObservers("Withdrawal successful.");
                 Console.ForegroundColor = ConsoleColor.Green;
@@ -162,7 +162,6 @@ namespace CashMachine_Labb1_DesignPattern
             Console.ForegroundColor = ConsoleColor.Blue;
             CashMachineSubject.NotifyObservers("Insert successfully");
             Console.ResetColor();
-            Console.WriteLine();
             Console.ForegroundColor = ConsoleColor.Green;
             CashMachineSubject.NotifyObservers($"New balance is: ${newBalance}");
             Console.ResetColor();

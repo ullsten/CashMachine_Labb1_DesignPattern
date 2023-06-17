@@ -74,23 +74,25 @@ namespace CashMachine_Labb1_DesignPattern
                 switch (input)
                 {
                     case "1":
+                        Console.Clear();
                         PerformOperation(new CheckBalanceOperationStrategy(cashMachine));
                         break;
                     case "2":
+                        Console.Clear();
                         PerformOperation(new InsertMoneyOperationStrategy(cashMachine));
                         
                         break;
                     case "3":
+                        Console.Clear();
                         PerformOperation(new WithdrawOperationStrategy(cashMachine));
                         break;
                     case "4":
+                        Console.Clear();
+                        cashMachine.SneakPeek();
                         cashMachine.EnterPin();
-                        //ExitUI();
-                        //exit = true;
-                        break;
-                        
+
+                        break; 
                     case "5":
-                        //LogInAgain();
                         ExitUI();
                         exit = true;
                         break;
