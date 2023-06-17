@@ -35,8 +35,10 @@ namespace CashMachine_Labb1_DesignPattern
                             isCardInserted = true;
                             Console.ForegroundColor = ConsoleColor.DarkBlue;
                             CashMachineSubject.NotifyObservers("Card inserted");
-                            SneakPeek();
                             Console.ResetColor();
+                            Console.WriteLine();
+                            SneakPeek();
+                            
                         }
                     }
                 }
@@ -170,6 +172,7 @@ namespace CashMachine_Labb1_DesignPattern
 
         public void SneakPeek()
         {
+            Console.ForegroundColor = ConsoleColor.DarkGray;
             CashMachineSubject.NotifyObservers("Valid pins: ");
             foreach (var validpin in validPins)
             {
