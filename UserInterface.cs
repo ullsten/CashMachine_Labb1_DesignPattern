@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CashMachine_Labb1_DesignPattern.Interfaces;
+using CashMachine_Labb1_DesignPattern.Strategy;
 
 namespace CashMachine_Labb1_DesignPattern
 {
@@ -46,7 +47,7 @@ namespace CashMachine_Labb1_DesignPattern
             CashMachineSubject.AttachObserver(transactionLogger);
 
             cashMachine.InsertCard();
-            cashMachine.EnterPin(userInputHandler.ReadPinInput());
+            cashMachine.EnterPin();
 
             bool exit = false;
             while (!exit)
@@ -54,12 +55,17 @@ namespace CashMachine_Labb1_DesignPattern
                 Console.WriteLine();
                 Console.WriteLine("Available operations");
                 Console.WriteLine(new string('-', 20));
+                Console.ForegroundColor= ConsoleColor.Magenta;
+                Console.WriteLine("1. Check Balance");
                 Console.ForegroundColor= ConsoleColor.Yellow;
-                Console.WriteLine("1. Withdraw Cash");
+                Console.WriteLine("2. Insert Cash");
                 Console.ForegroundColor = ConsoleColor.Blue;
-                Console.WriteLine("2. Check Balance");
+                Console.WriteLine("3. Withdraw Cash");
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.WriteLine("4. Enter new pin");
+                Console.ResetColor();
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("3. Exit");
+                Console.WriteLine("5. Log out");
                 Console.ResetColor();
                 Console.WriteLine(new string('-', 20));
                 Console.Write("Enter your choice: ");
@@ -68,12 +74,23 @@ namespace CashMachine_Labb1_DesignPattern
                 switch (input)
                 {
                     case "1":
-                        PerformOperation(new WithdrawOperationStrategy(cashMachine));
-                        break;
-                    case "2":
                         PerformOperation(new CheckBalanceOperationStrategy(cashMachine));
                         break;
+                    case "2":
+                        PerformOperation(new InsertMoneyOperationStrategy(cashMachine));
+                        
+                        break;
                     case "3":
+                        PerformOperation(new WithdrawOperationStrategy(cashMachine));
+                        break;
+                    case "4":
+                        cashMachine.EnterPin();
+                        //ExitUI();
+                        //exit = true;
+                        break;
+                        
+                    case "5":
+                        //LogInAgain();
                         ExitUI();
                         exit = true;
                         break;
@@ -93,6 +110,7 @@ namespace CashMachine_Labb1_DesignPattern
         {
             operationStrategy.PerformOperation();
         }
+
         private void ExitUI()
         {
             Console.WriteLine();
@@ -100,31 +118,31 @@ namespace CashMachine_Labb1_DesignPattern
             Thread.Sleep(500);
 
             Console.WriteLine("     ___________");
-            Thread.Sleep(200);
+            Thread.Sleep(100);
             Console.WriteLine("   //           \\|");
-            Thread.Sleep(200);
+            Thread.Sleep(100);
             Console.WriteLine("  //_____________\\|");
-            Thread.Sleep(200);
+            Thread.Sleep(100);
             Console.WriteLine("  |   -     -   ||");
-            Thread.Sleep(200);
+            Thread.Sleep(100);
             Console.WriteLine("  |             ||");
-            Thread.Sleep(200);
+            Thread.Sleep(100);
             Console.WriteLine("  |   _______   ||");
-            Thread.Sleep(200);
+            Thread.Sleep(100);
             Console.WriteLine("  |  |       |  ||");
-            Thread.Sleep(200);
+            Thread.Sleep(100);
             Console.WriteLine("  |  |       |  ||");
-            Thread.Sleep(200);
+            Thread.Sleep(100);
             Console.WriteLine("  |  |       |  ||");
-            Thread.Sleep(200);
+            Thread.Sleep(100);
             Console.WriteLine("  |  |       |  ||");
-            Thread.Sleep(200);
+            Thread.Sleep(100);
             Console.WriteLine("  |  |_______|  ||");
-            Thread.Sleep(200);
+            Thread.Sleep(100);
             Console.WriteLine("  |             ||");
-            Thread.Sleep(200);
+            Thread.Sleep(100);
             Console.WriteLine("  |             ||");
-            Thread.Sleep(200);
+            Thread.Sleep(100);
             Console.WriteLine("  |_____________||");
 
             Thread.Sleep(500);
