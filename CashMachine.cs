@@ -1,16 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Security.Principal;
 using System.Threading;
 using CashMachine_Labb1_DesignPattern.Interfaces;
 using CashMachine_Labb1_DesignPattern.Model;
+using CashMachine_Labb1_DesignPattern.Strategy;
+using Spectre.Console;
 
 namespace CashMachine_Labb1_DesignPattern
 {
     // CashMachine (Observer Pattern)
     public class CashMachine : ICashMachineObserver
     {
+        private CashMachine _cashMachine;
         private static readonly object lockObject = new object();
         private static bool isCardInserted = true;
         private static int[] validPins = { 1234, 5678, 9876 }; // Define the valid PINs
@@ -21,16 +25,18 @@ namespace CashMachine_Labb1_DesignPattern
             new Account { AccountID = GenerateRandomAccountNumber(), Pin = 9876, Balance = 456800 }
         };
         private int enteredPin;
-       // private double balance; // Define account balance, same for all validPins
-
+        private string loggedInCustomerName;
         public void InsertCard()
         {
             Console.ForegroundColor = ConsoleColor.DarkYellow;
             Console.WriteLine("Welcome to AI ATM bank:");
             Console.ResetColor();
+            Console.Write("Enter your name: ");
+            var name = Console.ReadLine();
+            loggedInCustomerName = name;
             Console.WriteLine();
 
-            Console.WriteLine("Have you inserted the card? [Y/N]");
+            AnsiConsole.MarkupLine($"Insert your card [yellow]{name}[/]? (Y/N)");
             var cardAnswer = Console.ReadLine();
             if (cardAnswer != null)
             {
@@ -105,6 +111,17 @@ namespace CashMachine_Labb1_DesignPattern
             Console.WriteLine();
             CashMachineSubject.NotifyObservers("PIN entered successfully");
             Console.ResetColor();
+            Console.WriteLine();
+            Console.WriteLine("Getting account info.");
+            Thread.Sleep(550);
+            Console.WriteLine("..");
+            Thread.Sleep(550);
+            Console.WriteLine("...");
+            Thread.Sleep(550);
+            Console.WriteLine("....Done");
+            Thread.Sleep(550);
+
+            Console.Clear();
         }
 
         private int ReadPinInput()
@@ -196,18 +213,21 @@ namespace CashMachine_Labb1_DesignPattern
             }
         }
 
-        public void PerformTransfer()
+        public void PerformTransferMoney()
         {
             Console.WriteLine("Available accounts:");
-            foreach (var account in accounts)
+            //filter to only show account != enteredPin account
+            var sourceAccount = GetAccountByPin(enteredPin);
+            Console.WriteLine(new string('-', 40));
+            foreach (var account in accounts.Where(a=>a != sourceAccount))
             {
-                Console.WriteLine($"Account ID: {account.AccountID}");
+               AnsiConsole.MarkupLine($"[lightsalmon1]Account ID:[/] [mediumpurple1]{account.AccountID}[/]");
             }
-
+            Console.WriteLine(new string('-', 40));
             string targetAccountId = ReadAccountIdInput("Enter the account ID to transfer money to: ");
             double amount = ReadAmountInput("Enter the amount to transfer: ");
 
-            var sourceAccount = GetAccountByPin(enteredPin);
+            sourceAccount = GetAccountByPin(enteredPin);
             var targetAccount = GetAccountById(targetAccountId);
 
             if (sourceAccount != null && targetAccount != null)
@@ -217,11 +237,16 @@ namespace CashMachine_Labb1_DesignPattern
                     DeductBalance(amount, sourceAccount);
                     AddBalance(amount, targetAccount);
 
+                    Console.WriteLine(new string('-', 70));
                     Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine();
                     CashMachineSubject.NotifyObservers($"Transfer of ${amount} successful.");
-                    CashMachineSubject.NotifyObservers($"New balance for account {sourceAccount.AccountID} is: ${sourceAccount.Balance}");
-                    CashMachineSubject.NotifyObservers($"New balance for account {targetAccount.AccountID} is: ${targetAccount.Balance}");
+
+                    Console.ForegroundColor = ConsoleColor.Blue;
+                    CashMachineSubject.NotifyObservers($"New balance for your account {sourceAccount.AccountID} is: ${sourceAccount.Balance}");
                     Console.ResetColor();
+                    //CashMachineSubject.NotifyObservers($"New balance for account {targetAccount.AccountID} is: ${targetAccount.Balance}");
+                    Console.WriteLine(new string('-', 70));
                 }
                 else
                 {
@@ -309,13 +334,26 @@ namespace CashMachine_Labb1_DesignPattern
             Random random = new Random();
             string accountNumber = string.Empty;
 
-            // Generate a 10-digit random number
-            for (int i = 0; i < 10; i++)
+            // Generate a 5-digit random number
+            for (int i = 0; i < 5; i++)
             {
                 accountNumber += random.Next(0, 10).ToString();
             }
 
             return accountNumber;
+        }
+        public void LoggedInAccount()
+        {
+            var loggedInAccount = GetAccountByPin(enteredPin);
+
+            Console.WriteLine();
+            Console.WriteLine(new string('-', 20));
+            AnsiConsole.MarkupLine("[orange1]Logged in[/]");
+            AnsiConsole.MarkupLine($"[green3]Account owner:[/] [yellow]{loggedInCustomerName}[/]");
+            AnsiConsole.MarkupLine($"[springgreen3]Account ID:[/] [blue]{loggedInAccount.AccountID}[/]");
+            AnsiConsole.MarkupLine($"[darkcyan]Balance:[/] [lightpink1]${loggedInAccount.Balance}[/]");
+            Console.ResetColor();
+            Console.WriteLine(new string('-', 20));
         }
     }
 }

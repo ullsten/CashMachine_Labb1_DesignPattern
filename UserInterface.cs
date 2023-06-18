@@ -11,12 +11,12 @@ namespace CashMachine_Labb1_DesignPattern
     // User interface (Factory Method, Observer, Strategy patterns)
     public class UserInterface
     {
-        private CashMachine cashMachine;
-        private UserInputHandler userInputHandler;
+        private CashMachine _cashMachine;
+        private UserInputHandler _userInputHandler;
         public UserInterface()
         {
-            cashMachine = CashMachineFactory.CreateCashMachine();
-            userInputHandler = new UserInputHandler();
+            _cashMachine = CashMachineFactory.CreateCashMachine();
+            _userInputHandler = new UserInputHandler();
         }
 
         // UserInputHandler
@@ -43,28 +43,29 @@ namespace CashMachine_Labb1_DesignPattern
             var transactionLogger = new TransactionLogger();
             CashMachineSubject.AttachObserver(transactionLogger);
 
-            cashMachine.InsertCard();
-            cashMachine.EnterPin();
+            _cashMachine.InsertCard();
+            _cashMachine.EnterPin();
 
             bool exit = false;
             while (!exit)
             {
+                _cashMachine.LoggedInAccount();
                 Console.WriteLine();
                 Console.WriteLine("Available operations");
                 Console.WriteLine(new string('-', 20));
-                Console.ForegroundColor= ConsoleColor.Magenta;
-                Console.WriteLine("1. Check Balance");
+                //Console.ForegroundColor= ConsoleColor.Magenta;
+                //Console.WriteLine("1. Check Balance");
                 Console.ForegroundColor= ConsoleColor.Yellow;
-                Console.WriteLine("2. Insert Cash");
+                Console.WriteLine("1. Insert Cash");
                 Console.ForegroundColor = ConsoleColor.Blue;
-                Console.WriteLine("3. Withdraw Cash");
+                Console.WriteLine("2. Withdraw Cash");
                 Console.ForegroundColor = ConsoleColor.Cyan;
-                Console.WriteLine("4. Transfer money");
+                Console.WriteLine("3. Transfer money");
                 Console.ResetColor();
-                Console.WriteLine("5. Enter new pin");
+                Console.WriteLine("4. Change account");
                 Console.ResetColor();
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("6. Log out");
+                Console.WriteLine("5. Log out");
                 Console.ResetColor();
                 Console.WriteLine(new string('-', 20));
                 Console.Write("Enter your choice: ");
@@ -72,29 +73,29 @@ namespace CashMachine_Labb1_DesignPattern
 
                 switch (input)
                 {
+                    //case "1":
+                    //    Console.Clear();
+                    //    PerformOperation(new CheckBalanceOperationStrategy(_cashMachine));
+                    //    break;
                     case "1":
                         Console.Clear();
-                        PerformOperation(new CheckBalanceOperationStrategy(cashMachine));
+                        PerformOperation(new InsertMoneyOperationStrategy(_cashMachine));
+                        
                         break;
                     case "2":
                         Console.Clear();
-                        PerformOperation(new InsertMoneyOperationStrategy(cashMachine));
-                        
+                        PerformOperation(new WithdrawOperationStrategy(_cashMachine));
                         break;
                     case "3":
                         Console.Clear();
-                        PerformOperation(new WithdrawOperationStrategy(cashMachine));
-                        break;
+                        PerformOperation(new TransferMoneyOperationStrategy(_cashMachine));
+                        break; 
                     case "4":
                         Console.Clear();
-                        cashMachine.PerformTransfer();
-                        break; 
-                    case "5":
-                        Console.Clear();
-                        cashMachine.SneakPeek();
-                        cashMachine.EnterPin();
+                        _cashMachine.SneakPeek();
+                        _cashMachine.EnterPin();
                         break;
-                    case "6":
+                    case "5":
                         Console.Clear();
                         ExitUI();
                         exit = true;
